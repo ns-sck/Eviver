@@ -1,0 +1,21 @@
+cp-code-editor/
+├── src/
+│   ├── __init__.py
+│   ├── main.py
+│   ├── editor/
+│   │   ├── __init__.py
+│   │   ├── code_editor.py
+│   │   └── syntax_highlighter.py
+│   ├── ui/
+│   │   ├── __init__.py
+│   │   ├── main_window.py
+│   │   ├── file_browser.py
+│   │   └── menubar.py
+│   └── utils/
+│       ├── __init__.py
+│       └── file_operations.py
+├── resources/
+│   ├── themes/
+│   └── snippets/
+├── README.md
+└── requirements.txt 
