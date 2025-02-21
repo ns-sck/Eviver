@@ -3,6 +3,8 @@ from PyQt6.Qsci import QsciScintilla, QsciLexerPython
 from PyQt6.QtGui import QFont, QColor
 from PyQt6.QtCore import Qt
 from .custom_lexer import LexerCPP
+from utils.snippet_manager import SnippetManager
+from ui.snippet_picker import SnippetPicker
 # from .syntax_highlighter import PythonSyntaxHighlighter
 
 class CodeEditor(QsciScintilla):
@@ -10,6 +12,7 @@ class CodeEditor(QsciScintilla):
         super().__init__()
         self.init_editor()
         self.init_custom_behavior()
+        self.snippet_manager = SnippetManager()
 
     def init_editor(self):
         # font = QFont('Consolas', 20)
@@ -45,24 +48,44 @@ class CodeEditor(QsciScintilla):
     def init_custom_behavior(self):
         self.keyPressEvent = self.custom_key_press_event
 
+    def show_snippet_picker(self):
+        dialog = SnippetPicker(self.snippet_manager, self)
+        dialog.snippetSelected.connect(self.insert_snippet)
+        dialog.exec()
+
+    def insert_snippet(self, prefix):
+        snippet_body = self.snippet_manager.get_snippet_body(prefix)
+        if snippet_body:
+            # Get current indentation
+            line, _ = self.getCursorPosition()
+            current_line = self.text(line)
+            current_indent = len(current_line) - len(current_line.lstrip())
+            indent_str = " " * current_indent
+
+            # Insert the snippet with proper indentation
+            indented_snippet = "\n".join(indent_str + line for line in snippet_body.split("\n"))
+            self.insert(indented_snippet)
+
     def custom_key_press_event(self, event):
-        pairs = {
-            "(": ")",
-            "[": "]",
-            "{": "}",
-            '"': '"',
-            "'": "'"
-        }
-        
-        if event.text() in pairs:
+        # Check for snippet picker shortcut (Ctrl+J)
+        if event.modifiers() == Qt.KeyboardModifier.ControlModifier and event.key() == Qt.Key.Key_J:
+            self.show_snippet_picker()
+            return
+
+        if event.text() in {"(", "[", "{", '"', "'"}:
+            pairs = {
+                "(": ")",
+                "[": "]",
+                "{": "}",
+                '"': '"',
+                "'": "'"
+            }
             line, index = self.getCursorPosition()
-            
             self.insert(event.text())
             self.setCursorPosition(line, index + 1)
             self.insert(pairs[event.text()])
             
         elif event.key() == Qt.Key.Key_Return:
-
             line, index = self.getCursorPosition()
             current_line = self.text(line)
 
@@ -79,17 +102,13 @@ class CodeEditor(QsciScintilla):
                 self.setCursorPosition(line + 1, self.lineLength(line + 1) - 1)
             else:
                 indent = len(current_line) - len(current_line.lstrip())
-
                 QsciScintilla.keyPressEvent(self, event)
-
                 self.insert("\t" * (indent // 2))
                 self.setCursorPosition(line + 1, (indent // 2))
             
         elif event.key() == Qt.Key.Key_Tab:
             line, index = self.getCursorPosition()
-
             self.insert("\t")
-
             self.setCursorPosition(line, index + 1)
             
         else:

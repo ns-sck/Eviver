@@ -13,6 +13,7 @@ class LexerCPP(QsciLexerCustom):
         "Operator": 6,
         "Identifier": 7,
         "Type": 8,
+        "Symbol": 9,
     }
     
     keyword_list = [
@@ -33,32 +34,45 @@ class LexerCPP(QsciLexerCustom):
         "stack", "pair", "size_t"
     ]
 
+    number_list = [
+        # "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
+    ]
+
+    symbol_list = [
+        ">", "<", "=", "+", "-", "*", "/", "%",
+        "!", "~", "&", "|", "^", "?", ":", ";",
+        ".", ",", "(", ")", "[", "]", "{", "}",
+        "->", "::", "++", "--", "!", "~", "*", "&",
+        "(", ")", "[", "]", ".", "->", "::", "++", "--",
+        "!", "~", "*", "&"
+    ]
+
     def __init__(self, parent):
         super().__init__(parent)
 
         self.setDefaultColor(QColor("#FFFFFF"))
         self.setDefaultPaper(QColor("#111111"))
-        self.setDefaultFont(QFont("Monospace", 20))
+        self.setDefaultFont(QFont("Monospace", 16))
         
         self.init_colors()
         
         for i in range(len(self.styles)):
             if i == self.styles["Keyword"] or i == self.styles["Type"]:
-                self.setFont(QFont("Monospace", 20), i)
+                self.setFont(QFont("Monospace", 16), i)
             else:
-                self.setFont(QFont("Monospace", 20), i)
+                self.setFont(QFont("Monospace", 16), i)
 
     def init_colors(self):
         self.setColor(QColor("#B7F1FF"), self.styles["Default"])
         self.setColor(QColor(0xFF, 0xFF, 0x7f), self.styles["Comment"])
-        self.setColor(QColor("#FFFFFF"), self.styles["Keyword"])
+        self.setColor(QColor("#50B0FF"), self.styles["Keyword"])
         self.setColor(QColor(0xFF, 0xFF, 0x7f), self.styles["String"])
-        self.setColor(QColor(0xFF, 0xFF, 0x7f), self.styles["Number"])
+        self.setColor(QColor("#EDFFAF"), self.styles["Number"])
         self.setColor(QColor(0xFF, 0xFF, 0x7f), self.styles["Preprocessor"])
         self.setColor(QColor(0xFF, 0xFF, 0x7f), self.styles["Operator"])
         self.setColor(QColor(0xFF, 0xFF, 0x7f), self.styles["Identifier"])
-        self.setColor(QColor(0xFF, 0xFF, 0xFF), self.styles["Type"])
-        
+        self.setColor(QColor("#50B0FF"), self.styles["Type"])
+        self.setColor(QColor("#50B0FF"), self.styles["Symbol"])
         for i in range(len(self.styles)):
             self.setPaper(QColor("#111111"), i)
 
@@ -96,6 +110,16 @@ class LexerCPP(QsciLexerCustom):
                 self.setStyling(
                     token[1],
                     self.styles["Type"]
+                )
+            elif token[0] in self.number_list:
+                self.setStyling(
+                    token[1],
+                    self.styles["Number"]
+                )
+            elif token[0] in self.symbol_list:
+                self.setStyling(
+                    token[1],
+                    self.styles["Symbol"]
                 )
             else:
                 self.setStyling(
