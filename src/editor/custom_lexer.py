@@ -1,19 +1,21 @@
 import re
 from PyQt6.Qsci import QsciLexerCustom
 from PyQt6.QtGui import QColor, QFont
+from utils.properties import *
 
 class LexerCPP(QsciLexerCustom):
     styles = {
         "Default": 0,
         "Comment": 1,
-        "Keyword": 2,
-        "String": 3,
-        "Number": 4,
-        "Preprocessor": 5,
-        "Operator": 6,
-        "Identifier": 7,
-        "Type": 8,
-        "Symbol": 9,
+        "DoubleSlashComment": 2,  # New style for // comments
+        "Keyword": 3,
+        "String": 4,
+        "Number": 5,
+        "Preprocessor": 6,
+        "Operator": 7,
+        "Identifier": 8,
+        "Type": 9,
+        "Symbol": 10,
     }
     
     keyword_list = [
@@ -63,18 +65,19 @@ class LexerCPP(QsciLexerCustom):
                 self.setFont(QFont("Monospace", 16), i)
 
     def init_colors(self):
-        self.setColor(QColor("#B7F1FF"), self.styles["Default"])
-        self.setColor(QColor(0xFF, 0xFF, 0x7f), self.styles["Comment"])
-        self.setColor(QColor("#50B0FF"), self.styles["Keyword"])
-        self.setColor(QColor(0xFF, 0xFF, 0x7f), self.styles["String"])
-        self.setColor(QColor("#EDFFAF"), self.styles["Number"])
-        self.setColor(QColor(0xFF, 0xFF, 0x7f), self.styles["Preprocessor"])
-        self.setColor(QColor(0xFF, 0xFF, 0x7f), self.styles["Operator"])
-        self.setColor(QColor(0xFF, 0xFF, 0x7f), self.styles["Identifier"])
-        self.setColor(QColor("#50B0FF"), self.styles["Type"])
-        self.setColor(QColor("#50B0FF"), self.styles["Symbol"])
+        self.setColor(SYNTAX_DEFAULT, self.styles["Default"])
+        self.setColor(SYNTAX_COMMENT, self.styles["Comment"])
+        self.setColor(SYNTAX_DOUBLE_SLASH_COMMENT, self.styles["DoubleSlashComment"])
+        self.setColor(SYNTAX_KEYWORD, self.styles["Keyword"])
+        self.setColor(SYNTAX_STRING, self.styles["String"])
+        self.setColor(SYNTAX_NUMBER, self.styles["Number"])
+        self.setColor(SYNTAX_PREPROCESSOR, self.styles["Preprocessor"])
+        self.setColor(SYNTAX_OPERATOR, self.styles["Operator"])
+        self.setColor(SYNTAX_IDENTIFIER, self.styles["Identifier"])
+        self.setColor(SYNTAX_TYPE, self.styles["Type"])
+        self.setColor(SYNTAX_SYMBOL, self.styles["Symbol"])
         for i in range(len(self.styles)):
-            self.setPaper(QColor("#111111"), i)
+            self.setPaper(SYNTAX_BACKGROUND, i)
 
     def language(self):
         return "C++"
@@ -90,39 +93,41 @@ class LexerCPP(QsciLexerCustom):
         self.startStyling(start)
 
         text = self.parent().text()[start:end]
-
-        splitter = re.compile(
-            r"(\{\.|\.\}|\#|\'|\"\"\"|\n|\s+|\w+|\W)"
-        )
-
-        tokens = [
-            (token, len(bytearray(token, "utf-8")))
-            for token in splitter.findall(text)
-        ]
-
-        for i, token in enumerate(tokens):
-            if token[0] in self.keyword_list:
-                self.setStyling(
-                    token[1],
-                    self.styles["Keyword"]
-                )
-            elif token[0] in self.type_list:
-                self.setStyling(
-                    token[1],
-                    self.styles["Type"]
-                )
-            elif token[0] in self.number_list:
-                self.setStyling(
-                    token[1],
-                    self.styles["Number"]
-                )
-            elif token[0] in self.symbol_list:
-                self.setStyling(
-                    token[1],
-                    self.styles["Symbol"]
-                )
+        
+        # Split text into lines to check for // comments
+        lines = text.split('\n')
+        pos = 0
+        
+        for line in lines:
+            stripped_line = line.lstrip()
+            # Handle double-slash comments
+            if stripped_line.startswith('//'):
+                # Style the leading spaces
+                leading_spaces = len(line) - len(stripped_line)
+                if leading_spaces > 0:
+                    self.setStyling(leading_spaces, self.styles["Default"])
+                    pos += leading_spaces
+                # Style the rest of the line as a double-slash comment
+                self.setStyling(len(line) - leading_spaces, self.styles["DoubleSlashComment"])
+                pos += len(line) - leading_spaces
             else:
-                self.setStyling(
-                    token[1],
-                    self.styles["Default"]
-                )
+                # Normal line processing
+                tokens = re.findall(r'(\{\.|\.\}|\#|\'|\"\"\"|\s+|\w+|\W)', line)
+                for token in tokens:
+                    token_len = len(token)
+                    if token in self.keyword_list:
+                        self.setStyling(token_len, self.styles["Keyword"])
+                    elif token in self.type_list:
+                        self.setStyling(token_len, self.styles["Type"])
+                    elif token in self.number_list:
+                        self.setStyling(token_len, self.styles["Number"])
+                    elif token in self.symbol_list:
+                        self.setStyling(token_len, self.styles["Symbol"])
+                    else:
+                        self.setStyling(token_len, self.styles["Default"])
+                    pos += token_len
+            
+            # Add newline character length
+            if pos < len(text):
+                self.setStyling(1, self.styles["Default"])
+                pos += 1

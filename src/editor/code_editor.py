@@ -5,6 +5,7 @@ from PyQt6.QtCore import Qt
 from .custom_lexer import LexerCPP
 from utils.snippet_manager import SnippetManager
 from ui.snippet_picker import SnippetPicker
+from utils.properties import *
 # from .syntax_highlighter import PythonSyntaxHighlighter
 
 class CodeEditor(QsciScintilla):
@@ -15,8 +16,7 @@ class CodeEditor(QsciScintilla):
         self.snippet_manager = SnippetManager()
 
     def init_editor(self):
-        # font = QFont('Consolas', 20)
-        # self.setFont(font)
+        self.setFont(EDITOR_FONT)
 
         self.setMarginType(0, QsciScintilla.MarginType.NumberMargin)
         self.setMarginWidth(0, "000")
@@ -24,24 +24,24 @@ class CodeEditor(QsciScintilla):
 
         self.setAutoIndent(False)
         self.setIndentationGuides(True)
-        self.setTabWidth(2)
-        self.setIndentationsUseTabs(False)
+        self.setTabWidth(EDITOR_TAB_WIDTH)
+        self.setIndentationsUseTabs(EDITOR_USE_TABS)
 
         self.setBraceMatching(QsciScintilla.BraceMatch.StrictBraceMatch)
 
-        self.setColor(QColor("#FFFFFF"))
-        self.setPaper(QColor("#2B2B2B"))
+        self.setColor(EDITOR_TEXT_COLOR)
+        self.setPaper(EDITOR_BACKGROUND_COLOR)
         self.setIndentationGuides(False)
        
-        self.setCaretWidth(2)
-        self.setCaretForegroundColor(QColor("#FFFFFF"))
+        self.setCaretWidth(EDITOR_CARET_WIDTH)
+        self.setCaretForegroundColor(EDITOR_CARET_COLOR)
         self.setCaretLineVisible(True)
-        self.setCaretLineBackgroundColor(QColor("#2A2A2A"))
+        self.setCaretLineBackgroundColor(EDITOR_CARET_LINE_COLOR)
 
         self.lexer = LexerCPP(self)
         self.setLexer(self.lexer)
 
-        self.setMarginsBackgroundColor(QColor("#111111"))
+        self.setMarginsBackgroundColor(EDITOR_MARGIN_BACKGROUND_COLOR)
         self.setMarginWidth(0, "000")
         self.setMarginWidth(1, "0")
 

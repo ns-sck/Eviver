@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import QMenuBar, QMenu, QFileDialog, QMessageBox
 from PyQt6.QtCore import Qt
 from editor.code_editor import CodeEditor
+from utils.properties import *
 import os
 
 class MenuBar(QMenuBar):
@@ -10,13 +11,13 @@ class MenuBar(QMenuBar):
 
     def init_menus(self):
         file_menu = self.addMenu("&File")
-        file_menu.addAction("New", self.new_file).setShortcut("Ctrl+N")
-        file_menu.addAction("Open", self.open_file).setShortcut("Ctrl+O")
-        file_menu.addAction("Save", self.save_file).setShortcut("Ctrl+S")
-        file_menu.addAction("Save As", self.save_file_as).setShortcut("Ctrl+Shift+S")
-        file_menu.addAction("Close Tab", self.close_current_tab).setShortcut("Ctrl+W")
+        file_menu.addAction("New", self.new_file).setShortcut(SHORTCUT_NEW_FILE)
+        file_menu.addAction("Open", self.open_file).setShortcut(SHORTCUT_OPEN_FILE)
+        file_menu.addAction("Save", self.save_file).setShortcut(SHORTCUT_SAVE_FILE)
+        file_menu.addAction("Save As", self.save_file_as).setShortcut(SHORTCUT_SAVE_AS)
+        file_menu.addAction("Close Tab", self.close_current_tab).setShortcut(SHORTCUT_CLOSE_TAB)
         file_menu.addSeparator()
-        file_menu.addAction("Exit", self.parent().close).setShortcut("Ctrl+Q")
+        file_menu.addAction("Exit", self.parent().close).setShortcut(SHORTCUT_EXIT)
 
         edit_menu = self.addMenu("&Edit")
         edit_menu.addAction("Undo", self.undo).setShortcut("Ctrl+Z")
@@ -27,8 +28,13 @@ class MenuBar(QMenuBar):
         edit_menu.addAction("Paste", self.paste).setShortcut("Ctrl+V")
 
         view_menu = self.addMenu("&View")
-        view_menu.addAction("Toggle File Browser", self.parent().toggle_file_browser).setShortcut("Ctrl+B")
-        view_menu.addAction("Toggle Input/Output", self.parent().toggle_io_view).setShortcut("Ctrl+I")
+        view_menu.addAction("Toggle File Browser", self.parent().toggle_file_browser).setShortcut(SHORTCUT_TOGGLE_FILE_BROWSER)
+        view_menu.addAction("Toggle Input/Output", self.parent().toggle_io_view).setShortcut(SHORTCUT_TOGGLE_IO)
+        view_menu.addAction("Toggle Terminal", self.parent().toggle_terminal).setShortcut(SHORTCUT_TOGGLE_TERMINAL)
+
+        build_menu = self.addMenu("&Build")
+        build_menu.addAction("Compile and Run", self.parent().compile_and_run).setShortcut(SHORTCUT_COMPILE_RUN)
+        build_menu.addAction("Compile and Debug", self.parent().compile_and_run_debug).setShortcut(SHORTCUT_COMPILE_DEBUG)
 
     def new_file(self):
         new_editor = CodeEditor()

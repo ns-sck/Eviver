@@ -1,6 +1,7 @@
-from PyQt6.QtWidgets import QTreeView, QWidget, QVBoxLayout, QToolBar
-from PyQt6.QtGui import QFileSystemModel, QAction, QIcon
-from PyQt6.QtCore import QDir, pyqtSignal, Qt
+from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QListWidget, QListWidgetItem,
+                            QLabel, QToolBar, QHBoxLayout)
+from PyQt6.QtGui import QIcon
+from PyQt6.QtCore import pyqtSignal, Qt
 import os
 
 class FileBrowser(QWidget):
@@ -8,6 +9,7 @@ class FileBrowser(QWidget):
 
     def __init__(self):
         super().__init__()
+        self.current_path = os.path.expanduser("~")  # Start from home directory
         self.init_ui()
 
     def init_ui(self):
@@ -15,42 +17,121 @@ class FileBrowser(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
+        # Path display
+        self.path_label = QLabel()
+        self.path_label.setStyleSheet("background-color: #2B2B2B; color: white; padding: 5px;")
+        layout.addWidget(self.path_label)
+
         # Create toolbar
         toolbar = QToolBar()
-        go_up_action = QAction("⬆ Go Up", self)
-        go_up_action.setStatusTip("Go to parent directory")
-        go_up_action.triggered.connect(self.go_to_parent_directory)
-        go_up_action.setShortcut("Alt+Up")
-        toolbar.addAction(go_up_action)
+        toolbar.setStyleSheet("background-color: #2B2B2B;")
+        
+        # Add navigation buttons
+        self.up_action = toolbar.addAction("⬆ Up")
+        self.up_action.triggered.connect(self.go_to_parent_directory)
+        self.up_action.setShortcut("Alt+Up")
+        
+        self.home_action = toolbar.addAction("🏠 Home")
+        self.home_action.triggered.connect(lambda: self.change_directory(os.path.expanduser("~")))
+        
+        self.refresh_action = toolbar.addAction("🔄 Refresh")
+        self.refresh_action.triggered.connect(lambda: self.change_directory(self.current_path))
+        
         layout.addWidget(toolbar)
 
-        # Create tree view
-        self.tree_view = QTreeView()
-        layout.addWidget(self.tree_view)
+        # Create file list
+        self.file_list = QListWidget()
+        self.file_list.setStyleSheet("""
+            QListWidget {
+                background-color: #1E1E1E;
+                color: white;
+                border: none;
+            }
+            QListWidget::item {
+                padding: 5px;
+            }
+            QListWidget::item:selected {
+                background-color: #1E1E1E;
+            }
+        """)
+        self.file_list.itemDoubleClicked.connect(self._on_item_double_clicked)
+        self.file_list.setAlternatingRowColors(True)
+        layout.addWidget(self.file_list)
 
-        # Setup file system model
-        self.model = QFileSystemModel()
-        self.model.setRootPath(QDir.currentPath())
-        self.tree_view.setModel(self.model)
-        self.tree_view.setRootIndex(self.model.index(QDir.currentPath()))
-        
-        # Hide unnecessary columns
-        for i in range(1, 4):
-            self.tree_view.hideColumn(i)
+        # Status bar
+        self.status_bar = QLabel()
+        self.status_bar.setStyleSheet("background-color: #2B2B2B; color: white; padding: 5px;")
+        layout.addWidget(self.status_bar)
 
-        # Connect double click signal
-        self.tree_view.doubleClicked.connect(self._on_double_click)
+        # Initial directory load
+        self.change_directory(self.current_path)
 
-    def _on_double_click(self, index):
-        file_path = self.model.filePath(index)
-        if self.model.isDir(index):  # If it's a directory
-            self.tree_view.setRootIndex(index)  # Set it as the new root
-        else:  # If it's a file
-            self.fileSelected.emit(file_path)
+    def change_directory(self, path):
+        try:
+            os.chdir(path)
+            self.current_path = path
+            self.path_label.setText(f" 📁 {path}")
+            self.refresh_file_list()
+        except Exception as e:
+            self.status_bar.setText(f"Error: {str(e)}")
+
+    def refresh_file_list(self):
+        self.file_list.clear()
+        try:
+            # Add parent directory item
+            parent_item = QListWidgetItem(".. (Parent Directory)")
+            parent_item.setData(Qt.ItemDataRole.UserRole, os.path.dirname(self.current_path))
+            self.file_list.addItem(parent_item)
+
+            # Get directory contents
+            items = os.listdir(self.current_path)
+            
+            # Separate directories and files
+            dirs = []
+            files = []
+            for item in items:
+                full_path = os.path.join(self.current_path, item)
+                if os.path.isdir(full_path):
+                    dirs.append(item)
+                else:
+                    files.append(item)
+
+            # Add directories first
+            for dir_name in sorted(dirs):
+                item = QListWidgetItem(f"📁 {dir_name}")
+                item.setData(Qt.ItemDataRole.UserRole, os.path.join(self.current_path, dir_name))
+                self.file_list.addItem(item)
+
+            # Then add files
+            for file_name in sorted(files):
+                item = QListWidgetItem(f"📄 {file_name}")
+                item.setData(Qt.ItemDataRole.UserRole, os.path.join(self.current_path, file_name))
+                self.file_list.addItem(item)
+
+            # Update status bar
+            self.status_bar.setText(f"{len(dirs)} directories, {len(files)} files")
+
+        except Exception as e:
+            self.status_bar.setText(f"Error: {str(e)}")
+
+    def _on_item_double_clicked(self, item):
+        path = item.data(Qt.ItemDataRole.UserRole)
+        if os.path.isdir(path):
+            self.change_directory(path)
+        else:
+            self.fileSelected.emit(path)
 
     def go_to_parent_directory(self):
-        current_index = self.tree_view.rootIndex()
-        parent_index = current_index.parent()
-        if parent_index.isValid():  # Check if parent exists (not at root)
-            self.tree_view.setRootIndex(parent_index)
-            self.tree_view.setCurrentIndex(current_index)  # Select the previous directory
+        parent_dir = os.path.dirname(self.current_path)
+        if parent_dir != self.current_path:  # Check if not at root
+            self.change_directory(parent_dir)
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_Return:
+            current_item = self.file_list.currentItem()
+            if current_item:
+                self._on_item_double_clicked(current_item)
+        elif event.key() == Qt.Key.Key_Backspace:
+            self.go_to_parent_directory()
+        else:
+            super().keyPressEvent(event)
