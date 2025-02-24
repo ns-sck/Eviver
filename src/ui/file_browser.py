@@ -2,14 +2,17 @@ from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QListWidget, QListWidgetItem,
                             QLabel, QToolBar, QHBoxLayout)
 from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import pyqtSignal, Qt
+from utils.properties import DEFAULT_WORKSPACE_DIR
 import os
 
 class FileBrowser(QWidget):
-    fileSelected = pyqtSignal(str)  # Signal for when a file is selected
+    fileSelected = pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
-        self.current_path = os.path.expanduser("~")  # Start from home directory
+        # Create default workspace directory if it doesn't exist
+        os.makedirs(DEFAULT_WORKSPACE_DIR, exist_ok=True)
+        self.current_path = DEFAULT_WORKSPACE_DIR
         self.init_ui()
 
     def init_ui(self):
@@ -17,16 +20,13 @@ class FileBrowser(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
-        # Path display
         self.path_label = QLabel()
         self.path_label.setStyleSheet("background-color: #2B2B2B; color: white; padding: 5px;")
         layout.addWidget(self.path_label)
 
-        # Create toolbar
         toolbar = QToolBar()
         toolbar.setStyleSheet("background-color: #2B2B2B;")
-        
-        # Add navigation buttons
+
         self.up_action = toolbar.addAction("⬆ Up")
         self.up_action.triggered.connect(self.go_to_parent_directory)
         self.up_action.setShortcut("Alt+Up")
@@ -51,7 +51,7 @@ class FileBrowser(QWidget):
                 padding: 5px;
             }
             QListWidget::item:selected {
-                background-color: #1E1E1E;
+                background-color: #3e3e3e;
             }
         """)
         self.file_list.itemDoubleClicked.connect(self._on_item_double_clicked)
@@ -63,7 +63,6 @@ class FileBrowser(QWidget):
         self.status_bar.setStyleSheet("background-color: #2B2B2B; color: white; padding: 5px;")
         layout.addWidget(self.status_bar)
 
-        # Initial directory load
         self.change_directory(self.current_path)
 
     def change_directory(self, path):
@@ -78,15 +77,12 @@ class FileBrowser(QWidget):
     def refresh_file_list(self):
         self.file_list.clear()
         try:
-            # Add parent directory item
-            parent_item = QListWidgetItem(".. (Parent Directory)")
+            parent_item = QListWidgetItem("..")
             parent_item.setData(Qt.ItemDataRole.UserRole, os.path.dirname(self.current_path))
             self.file_list.addItem(parent_item)
 
-            # Get directory contents
             items = os.listdir(self.current_path)
             
-            # Separate directories and files
             dirs = []
             files = []
             for item in items:
@@ -96,19 +92,16 @@ class FileBrowser(QWidget):
                 else:
                     files.append(item)
 
-            # Add directories first
             for dir_name in sorted(dirs):
                 item = QListWidgetItem(f"📁 {dir_name}")
                 item.setData(Qt.ItemDataRole.UserRole, os.path.join(self.current_path, dir_name))
                 self.file_list.addItem(item)
 
-            # Then add files
             for file_name in sorted(files):
                 item = QListWidgetItem(f"📄 {file_name}")
                 item.setData(Qt.ItemDataRole.UserRole, os.path.join(self.current_path, file_name))
                 self.file_list.addItem(item)
 
-            # Update status bar
             self.status_bar.setText(f"{len(dirs)} directories, {len(files)} files")
 
         except Exception as e:
@@ -123,7 +116,7 @@ class FileBrowser(QWidget):
 
     def go_to_parent_directory(self):
         parent_dir = os.path.dirname(self.current_path)
-        if parent_dir != self.current_path:  # Check if not at root
+        if parent_dir != self.current_path:
             self.change_directory(parent_dir)
 
     def keyPressEvent(self, event):

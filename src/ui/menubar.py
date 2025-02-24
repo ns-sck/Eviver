@@ -28,18 +28,18 @@ class MenuBar(QMenuBar):
         edit_menu.addAction("Paste", self.paste).setShortcut("Ctrl+V")
 
         view_menu = self.addMenu("&View")
-        view_menu.addAction("Toggle File Browser", self.parent().toggle_file_browser).setShortcut(SHORTCUT_TOGGLE_FILE_BROWSER)
-        view_menu.addAction("Toggle Input/Output", self.parent().toggle_io_view).setShortcut(SHORTCUT_TOGGLE_IO)
-        view_menu.addAction("Toggle Terminal", self.parent().toggle_terminal).setShortcut(SHORTCUT_TOGGLE_TERMINAL)
+        view_menu.addAction("Toggle File Browser", self.toggle_file_browser).setShortcut(SHORTCUT_TOGGLE_FILE_BROWSER)
+        view_menu.addAction("Toggle Input/Output", self.toggle_io_view).setShortcut(SHORTCUT_TOGGLE_IO)
+        view_menu.addAction("Toggle Terminal", self.toggle_terminal).setShortcut(SHORTCUT_TOGGLE_TERMINAL)
 
         build_menu = self.addMenu("&Build")
-        build_menu.addAction("Compile and Run", self.parent().compile_and_run).setShortcut(SHORTCUT_COMPILE_RUN)
-        build_menu.addAction("Compile and Debug", self.parent().compile_and_run_debug).setShortcut(SHORTCUT_COMPILE_DEBUG)
+        build_menu.addAction("Compile and Run", self.compile_and_run).setShortcut(SHORTCUT_COMPILE_RUN)
+        build_menu.addAction("Compile and Debug", self.compile_and_debug).setShortcut(SHORTCUT_COMPILE_DEBUG)
 
     def new_file(self):
         new_editor = CodeEditor()
-        self.parent().tab_widget.addTab(new_editor, "Untitled")
-        self.parent().tab_widget.setCurrentWidget(new_editor)
+        self.parent().tab_manager.get_widget().addTab(new_editor, "Untitled")
+        self.parent().tab_manager.get_widget().setCurrentWidget(new_editor)
         new_editor.setFocus()
 
     def open_file(self):
@@ -50,11 +50,11 @@ class MenuBar(QMenuBar):
             "All Files (*.*)"
         )
         if file_name:
-            self.parent().open_file(file_name)
+            self.parent().tab_manager.open_file(file_name)
 
     def save_file(self):
-        current_editor = self.parent().get_current_editor()
-        current_file = self.parent().get_current_file()
+        current_editor = self.parent().tab_manager.get_current_editor()
+        current_file = self.parent().tab_manager.get_current_file()
         
         if current_editor:
             if current_file:
@@ -63,7 +63,7 @@ class MenuBar(QMenuBar):
                 self.save_file_as()
 
     def save_file_as(self):
-        current_editor = self.parent().get_current_editor()
+        current_editor = self.parent().tab_manager.get_current_editor()
         if current_editor:
             file_name, _ = QFileDialog.getSaveFileName(
                 self,
@@ -74,12 +74,12 @@ class MenuBar(QMenuBar):
             if file_name:
                 self._save_to_file(file_name)
                 # Update tab name and tooltip
-                current_index = self.parent().tab_widget.currentIndex()
-                self.parent().tab_widget.setTabText(current_index, os.path.basename(file_name))
-                self.parent().tab_widget.setTabToolTip(current_index, file_name)
+                current_index = self.parent().tab_manager.get_widget().currentIndex()
+                self.parent().tab_manager.get_widget().setTabText(current_index, os.path.basename(file_name))
+                self.parent().tab_manager.get_widget().setTabToolTip(current_index, file_name)
 
     def _save_to_file(self, file_name):
-        current_editor = self.parent().get_current_editor()
+        current_editor = self.parent().tab_manager.get_current_editor()
         try:
             with open(file_name, 'w') as file:
                 file.write(current_editor.text())
@@ -87,31 +87,54 @@ class MenuBar(QMenuBar):
             QMessageBox.critical(self, "Error", f"Could not save file: {str(e)}")
 
     def close_current_tab(self):
-        current_index = self.parent().tab_widget.currentIndex()
+        current_index = self.parent().tab_manager.get_widget().currentIndex()
         if current_index >= 0:
-            self.parent().tab_widget.removeTab(current_index)
+            self.parent().tab_manager.close_tab(current_index)
+
+    def toggle_io_view(self):
+        self.parent().io_manager.toggle_view()
+
+    def toggle_terminal(self):
+        current_file = self.parent().tab_manager.get_current_file()
+        working_dir = os.path.dirname(current_file) if current_file else os.getcwd()
+        self.parent().terminal_handler.toggle_terminal(working_dir)
+
+    def compile_and_run(self):
+        self.parent().compiler_manager.compile_and_run(
+            self.parent().tab_manager.get_current_file(), 
+            debug=False
+        )
+
+    def compile_and_debug(self):
+        self.parent().compiler_manager.compile_and_run(
+            self.parent().tab_manager.get_current_file(), 
+            debug=True
+        )
 
     def undo(self):
-        current_editor = self.parent().get_current_editor()
+        current_editor = self.parent().tab_manager.get_current_editor()
         if current_editor:
             current_editor.undo()
 
     def redo(self):
-        current_editor = self.parent().get_current_editor()
+        current_editor = self.parent().tab_manager.get_current_editor()
         if current_editor:
             current_editor.redo()
 
     def cut(self):
-        current_editor = self.parent().get_current_editor()
+        current_editor = self.parent().tab_manager.get_current_editor()
         if current_editor:
             current_editor.cut()
 
     def copy(self):
-        current_editor = self.parent().get_current_editor()
+        current_editor = self.parent().tab_manager.get_current_editor()
         if current_editor:
             current_editor.copy()
 
     def paste(self):
-        current_editor = self.parent().get_current_editor()
+        current_editor = self.parent().tab_manager.get_current_editor()
         if current_editor:
-            current_editor.paste() 
+            current_editor.paste()
+
+    def toggle_file_browser(self):
+        self.parent().file_browser_manager.toggle_view() 

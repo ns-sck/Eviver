@@ -28,13 +28,10 @@ class SnippetPicker(QDialog):
         self.snippet_list.itemDoubleClicked.connect(self.on_snippet_selected)
         layout.addWidget(self.snippet_list)
 
-        # Populate initial list
         self.populate_snippets()
 
-        # Set size
         self.resize(400, 300)
         
-        # Set focus on search box
         self.search_box.setFocus()
 
     def populate_snippets(self, filter_text=""):
@@ -50,14 +47,12 @@ class SnippetPicker(QDialog):
         self.populate_snippets(text)
 
     def on_snippet_selected(self, item):
-        # Extract prefix from the item text (prefix - description)
         prefix = item.text().split(' - ')[0]
         self.snippetSelected.emit(prefix)
         self.accept()
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key.Key_Return and self.snippet_list.count() > 0:
-            # If Enter is pressed and there are items, select the first one
             prefix = self.snippet_list.item(0).text().split(' - ')[0]
             self.snippetSelected.emit(prefix)
             self.accept()

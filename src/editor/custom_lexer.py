@@ -16,6 +16,7 @@ class LexerCPP(QsciLexerCustom):
         "Identifier": 8,
         "Type": 9,
         "Symbol": 10,
+        "Parantheses": 11,
     }
     
     keyword_list = [
@@ -40,15 +41,16 @@ class LexerCPP(QsciLexerCustom):
         # "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
     ]
 
+    parantheses_list = [
+        "(", ")", "[", "]", "{", "}"
+    ]
+
     symbol_list = [
         ">", "<", "=", "+", "-", "*", "/", "%",
         "!", "~", "&", "|", "^", "?", ":", ";",
-        ".", ",", "(", ")", "[", "]", "{", "}",
-        "->", "::", "++", "--", "!", "~", "*", "&",
-        "(", ")", "[", "]", ".", "->", "::", "++", "--",
-        "!", "~", "*", "&"
+        ".", ",","->", "!", "~", "+", "&",
     ]
-
+    
     def __init__(self, parent):
         super().__init__(parent)
 
@@ -76,6 +78,7 @@ class LexerCPP(QsciLexerCustom):
         self.setColor(SYNTAX_IDENTIFIER, self.styles["Identifier"])
         self.setColor(SYNTAX_TYPE, self.styles["Type"])
         self.setColor(SYNTAX_SYMBOL, self.styles["Symbol"])
+        self.setColor(SYNTAX_PARANTHESES, self.styles["Parantheses"])
         for i in range(len(self.styles)):
             self.setPaper(SYNTAX_BACKGROUND, i)
 
@@ -94,14 +97,24 @@ class LexerCPP(QsciLexerCustom):
 
         text = self.parent().text()[start:end]
         
-        # Split text into lines to check for // comments
+        # Split text into lines to check for comments and preprocessor directives
         lines = text.split('\n')
         pos = 0
         
         for line in lines:
             stripped_line = line.lstrip()
+            # Handle preprocessor directives
+            if stripped_line.startswith('#include') or stripped_line.startswith('#define'):
+                # Style the leading spaces
+                leading_spaces = len(line) - len(stripped_line)
+                if leading_spaces > 0:
+                    self.setStyling(leading_spaces, self.styles["Default"])
+                    pos += leading_spaces
+                # Style the rest of the line as a preprocessor directive
+                self.setStyling(len(line) - leading_spaces, self.styles["Preprocessor"])
+                pos += len(line) - leading_spaces
             # Handle double-slash comments
-            if stripped_line.startswith('//'):
+            elif stripped_line.startswith('//'):
                 # Style the leading spaces
                 leading_spaces = len(line) - len(stripped_line)
                 if leading_spaces > 0:
@@ -123,6 +136,8 @@ class LexerCPP(QsciLexerCustom):
                         self.setStyling(token_len, self.styles["Number"])
                     elif token in self.symbol_list:
                         self.setStyling(token_len, self.styles["Symbol"])
+                    elif token in self.parantheses_list:
+                        self.setStyling(token_len, self.styles["Parantheses"])
                     else:
                         self.setStyling(token_len, self.styles["Default"])
                     pos += token_len
