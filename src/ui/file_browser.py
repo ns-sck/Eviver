@@ -10,7 +10,6 @@ class FileBrowser(QWidget):
 
     def __init__(self):
         super().__init__()
-        # Create default workspace directory if it doesn't exist
         os.makedirs(DEFAULT_WORKSPACE_DIR, exist_ok=True)
         self.current_path = DEFAULT_WORKSPACE_DIR
         self.init_ui()
@@ -39,7 +38,6 @@ class FileBrowser(QWidget):
         
         layout.addWidget(toolbar)
 
-        # Create file list
         self.file_list = QListWidget()
         self.file_list.setStyleSheet("""
             QListWidget {
@@ -58,7 +56,6 @@ class FileBrowser(QWidget):
         self.file_list.setAlternatingRowColors(True)
         layout.addWidget(self.file_list)
 
-        # Status bar
         self.status_bar = QLabel()
         self.status_bar.setStyleSheet("background-color: #2B2B2B; color: white; padding: 5px;")
         layout.addWidget(self.status_bar)

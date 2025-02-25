@@ -38,11 +38,9 @@ class CodeEditor(QsciScintilla):
         # SloppyBraceMatch - Match anywhere
         self.setBraceMatching(QsciScintilla.BraceMatch.SloppyBraceMatch)
         
-        # Set the style for matched braces
         self.setMatchedBraceBackgroundColor(EDITOR_BRACE_MATCHED_BG_COLOR)
         self.setMatchedBraceForegroundColor(EDITOR_BRACE_MATCHED_FG_COLOR)
         
-        # Set the style for unmatched braces
         self.setUnmatchedBraceBackgroundColor(EDITOR_BRACE_UNMATCHED_BG_COLOR)
         self.setUnmatchedBraceForegroundColor(EDITOR_BRACE_UNMATCHED_FG_COLOR)
 
@@ -232,6 +230,3 @@ class CodeEditor(QsciScintilla):
             
         else:
             QsciScintilla.keyPressEvent(self, event)
-
-        # Set syntax highlighting
-        # self.syntax_highlighter = PythonSyntaxHighlighter(self) 

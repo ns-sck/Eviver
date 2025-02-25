@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QLineEdit,
 from PyQt6.QtCore import Qt, pyqtSignal
 
 class SnippetPicker(QDialog):
-    snippetSelected = pyqtSignal(str)  # Signal emitted when a snippet is selected
+    snippetSelected = pyqtSignal(str)
 
     def __init__(self, snippet_manager, parent=None):
         super().__init__(parent)

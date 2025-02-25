@@ -1,7 +1,7 @@
 { 
   
-    "C++ Solve Function": {
-      "prefix": "solve",
+    "Template": {
+      "prefix": "temp",
       "body": [
         "#include <bits/stdc++.h>",
         "using namespace std;",

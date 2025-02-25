@@ -7,7 +7,7 @@ class LexerCPP(QsciLexerCustom):
     styles = {
         "Default": 0,
         "Comment": 1,
-        "DoubleSlashComment": 2,  # New style for // comments
+        "DoubleSlashComment": 2,
         "Keyword": 3,
         "String": 4,
         "Number": 5,
@@ -97,34 +97,26 @@ class LexerCPP(QsciLexerCustom):
 
         text = self.parent().text()[start:end]
         
-        # Split text into lines to check for comments and preprocessor directives
         lines = text.split('\n')
         pos = 0
         
         for line in lines:
             stripped_line = line.lstrip()
-            # Handle preprocessor directives
             if stripped_line.startswith('#include') or stripped_line.startswith('#define'):
-                # Style the leading spaces
                 leading_spaces = len(line) - len(stripped_line)
                 if leading_spaces > 0:
                     self.setStyling(leading_spaces, self.styles["Default"])
                     pos += leading_spaces
-                # Style the rest of the line as a preprocessor directive
                 self.setStyling(len(line) - leading_spaces, self.styles["Preprocessor"])
                 pos += len(line) - leading_spaces
-            # Handle double-slash comments
             elif stripped_line.startswith('//'):
-                # Style the leading spaces
                 leading_spaces = len(line) - len(stripped_line)
                 if leading_spaces > 0:
                     self.setStyling(leading_spaces, self.styles["Default"])
                     pos += leading_spaces
-                # Style the rest of the line as a double-slash comment
                 self.setStyling(len(line) - leading_spaces, self.styles["DoubleSlashComment"])
                 pos += len(line) - leading_spaces
             else:
-                # Normal line processing
                 tokens = re.findall(r'(\{\.|\.\}|\#|\'|\"\"\"|\s+|\w+|\W)', line)
                 for token in tokens:
                     token_len = len(token)
@@ -142,7 +134,6 @@ class LexerCPP(QsciLexerCustom):
                         self.setStyling(token_len, self.styles["Default"])
                     pos += token_len
             
-            # Add newline character length
             if pos < len(text):
                 self.setStyling(1, self.styles["Default"])
                 pos += 1

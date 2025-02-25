@@ -10,14 +10,12 @@ class FindReplaceDialog(QDialog):
     def initUI(self):
         layout = QVBoxLayout()
         
-        # Find section
         find_layout = QHBoxLayout()
         find_layout.addWidget(QLabel("Find:"))
         self.find_input = QLineEdit()
         find_layout.addWidget(self.find_input)
         layout.addLayout(find_layout)
         
-        # Replace section (if replace dialog)
         if self.replace:
             replace_layout = QHBoxLayout()
             replace_layout.addWidget(QLabel("Replace with:"))
@@ -25,7 +23,6 @@ class FindReplaceDialog(QDialog):
             replace_layout.addWidget(self.replace_input)
             layout.addLayout(replace_layout)
         
-        # Options
         options_layout = QHBoxLayout()
         self.case_sensitive = QCheckBox("Case sensitive")
         self.whole_words = QCheckBox("Whole words")
@@ -35,7 +32,6 @@ class FindReplaceDialog(QDialog):
         options_layout.addWidget(self.regex)
         layout.addLayout(options_layout)
         
-        # Buttons
         button_layout = QHBoxLayout()
         find_next_btn = QPushButton("Find Next")
         find_next_btn.clicked.connect(self.find_next)

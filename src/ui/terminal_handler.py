@@ -12,17 +12,14 @@ class TerminalHandler:
         if working_dir is None or not os.path.isdir(working_dir):
             working_dir = os.getcwd()
         
-        # Get the main window's geometry for bottom positioning
         window_x = self.parent.x()
         window_y = self.parent.y() + self.parent.height()
         
-        # Prepare the command to run in terminal
         if command:
             shell_cmd = f"cd {shlex.quote(working_dir)} && {command} && exec $SHELL"
         else:
             shell_cmd = f"cd {shlex.quote(working_dir)} && exec $SHELL"
         
-        # Try to detect the default terminal
         if os.system("which gnome-terminal > /dev/null") == 0:
             # For GNOME Terminal
             cmd = ["gnome-terminal", "--geometry", f"{TERMINAL_WIDTH}x{TERMINAL_HEIGHT}+{window_x}+{window_y}"]

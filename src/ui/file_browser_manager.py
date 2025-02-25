@@ -20,5 +20,4 @@ class FileBrowserManager:
         self.file_browser.fileSelected.connect(slot)
         
     def _on_file_selected(self, file_path):
-        # Switch back to editor view when a file is selected
         self.parent.stacked_widget.setCurrentWidget(self.parent.editor_widget) 
