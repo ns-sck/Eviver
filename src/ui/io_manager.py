@@ -10,27 +10,22 @@ class IOManager:
         self.setup_io_widget()
         
     def setup_io_widget(self):
-        # Create right side widget with input/output editors
         self.io_widget = QWidget()
         self.io_layout = QVBoxLayout(self.io_widget)
         self.io_layout.setContentsMargins(0, 0, 0, 0)
         self.io_layout.setSpacing(0)
         
-        # Create vertical splitter for input/output
         self.io_splitter = QSplitter(Qt.Orientation.Vertical)
         self.io_layout.addWidget(self.io_splitter)
         
-        # Create input editor
         self.input_editor = CodeEditor()
         self.input_editor.setWindowTitle(INPUT_FILE)
         self.io_splitter.addWidget(self.input_editor)
 
-        # Create output editor
         self.output_editor = CodeEditor()
         self.output_editor.setWindowTitle(OUTPUT_FILE)
         self.io_splitter.addWidget(self.output_editor)
 
-        # Hide IO widget by default
         self.io_widget.hide()
 
     def toggle_view(self):

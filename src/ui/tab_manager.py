@@ -14,13 +14,11 @@ class TabManager:
 
     def open_file(self, file_path):
         try:
-            # Check if file is already open
             for i in range(self.tab_widget.count()):
                 if self.tab_widget.tabToolTip(i) == file_path:
                     self.tab_widget.setCurrentIndex(i)
                     return True
 
-            # Create new editor for the file
             with open(file_path, 'r') as file:
                 new_editor = CodeEditor()
                 new_editor.setText(file.read())
