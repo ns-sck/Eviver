@@ -11,6 +11,42 @@ class TabManager:
         self.tab_widget = QTabWidget()
         self.tab_widget.setTabsClosable(True)
         self.tab_widget.tabCloseRequested.connect(self.close_tab)
+        
+        # Apply custom styling to the tab widget
+        self.tab_widget.setStyleSheet("""
+            QTabWidget {
+                background-color: #1E1E1E;
+            }
+            QTabWidget::pane {
+                border: none;
+            }
+            QTabBar::tab {
+                background-color: #2D2D2D;
+                color: #CCCCCC;
+                border: none;
+                height: 24px;
+                margin: 2px;
+            }
+            QTabBar::tab:selected {
+                background-color: #3C3C3C;
+                color: #FFFFFF;
+            }
+            QTabBar::tab:hover:!selected {
+                background-color: #353535;
+            }
+            QTabBar::close-button {
+                image: url(resources/close.png);
+                subcontrol-position: right;
+                margin: 2px;
+            }
+            QTabBar::close-button:hover {
+                background-color: #AA0000;
+                border-radius: 2px;
+            }
+            QTabBar::close-button:pressed {
+                background-color: #E81123;
+            }
+        """)
 
     def open_file(self, file_path):
         try:

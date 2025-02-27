@@ -68,21 +68,6 @@ A specialized code editor designed for competitive programming, built with Pytho
 4. Save using File -> Save or Ctrl+S
 5. Use the integrated terminal for compilation and execution
 
-## Keyboard Shortcuts
-
-| Shortcut | Action |
-|----------|--------|
-| Ctrl+N | New File |
-| Ctrl+O | Open File |
-| Ctrl+S | Save |
-| Ctrl+Shift+S | Save As |
-| Ctrl+Z | Undo |
-| Ctrl+Y | Redo |
-| Ctrl+F | Find |
-| Ctrl+H | Replace |
-| F5 | Run Code |
-| F9 | Toggle File Browser |
-
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
@@ -101,8 +86,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - Thanks to all contributors who participate in this project
 - Inspired by various code editors and competitive programming platforms
-
-## Contact
-
-Your Name - [@yourusername](https://twitter.com/yourusername)
-Project Link: [https://github.com/yourusername/cp-code-editor](https://github.com/yourusername/cp-code-editor) 

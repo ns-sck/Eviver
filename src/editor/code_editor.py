@@ -20,42 +20,46 @@ class CodeEditor(QsciScintilla):
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
     def init_editor(self):
-        # font = QFont('Consolas', 20)
-        # self.setFont(font)
-
+        # Set font
+        self.setFont(EDITOR_FONT)
+        
+        # Set margins
         self.setMarginType(0, QsciScintilla.MarginType.NumberMargin)
         self.setMarginWidth(0, "000")
         self.setMarginsForegroundColor(Qt.GlobalColor.darkGray)
 
+        # Set indentation
         self.setAutoIndent(False)
         self.setIndentationGuides(True)
         self.setTabWidth(EDITOR_TAB_WIDTH)
         self.setIndentationsUseTabs(EDITOR_USE_TABS)
 
-        # Brace matching options:
-        # NoBraceMatch - Disable brace matching
-        # StrictBraceMatch - Match only if braces are in valid positions
-        # SloppyBraceMatch - Match anywhere
+        # Set brace matching
         self.setBraceMatching(QsciScintilla.BraceMatch.SloppyBraceMatch)
-        
         self.setMatchedBraceBackgroundColor(EDITOR_BRACE_MATCHED_BG_COLOR)
         self.setMatchedBraceForegroundColor(EDITOR_BRACE_MATCHED_FG_COLOR)
-        
         self.setUnmatchedBraceBackgroundColor(EDITOR_BRACE_UNMATCHED_BG_COLOR)
         self.setUnmatchedBraceForegroundColor(EDITOR_BRACE_UNMATCHED_FG_COLOR)
 
+        # Set colors
         self.setColor(EDITOR_TEXT_COLOR)
         self.setPaper(EDITOR_BACKGROUND_COLOR)
         self.setIndentationGuides(False)
-       
+        self.setSelectionBackgroundColor(EDITOR_SELECTION_BG_COLOR)
+        self.setSelectionForegroundColor(EDITOR_SELECTION_FG_COLOR)
+        
+        # Set caret
         self.setCaretWidth(EDITOR_CARET_WIDTH)
         self.setCaretForegroundColor(EDITOR_CARET_COLOR)
         self.setCaretLineVisible(True)
         self.setCaretLineBackgroundColor(EDITOR_CARET_LINE_COLOR)
 
+        # Set lexer
         self.lexer = LexerCPP(self)
         self.setLexer(self.lexer)
+        self.lexer.setDefaultPaper(EDITOR_BACKGROUND_COLOR)
 
+        # Set margins
         self.setMarginsBackgroundColor(EDITOR_MARGIN_BACKGROUND_COLOR)
         self.setMarginWidth(0, "000")
         self.setMarginWidth(1, "00")
@@ -162,6 +166,103 @@ class CodeEditor(QsciScintilla):
         self.insert("\n" + indent_str)
         self.setCursorPosition(line + 1, (indent // self.tabWidth()))
 
+    def move_line_up(self):
+        if self.hasSelectedText():
+            # Get the selection range
+            line_from, index_from, line_to, index_to = self.getSelection()
+            if line_from > line_to:
+                line_from, line_to = line_to, line_from
+                
+            if line_from > 0:  # Can't move up if at first line
+                self.beginUndoAction()
+                
+                # Get the line above the selection
+                line_above = self.text(line_from - 1)
+                
+                # Store all selected lines
+                selected_lines = []
+                for line in range(line_from, line_to + 1):
+                    selected_lines.append(self.text(line))
+                
+                # Remove the selected lines and insert them one line above
+                self.setSelection(line_from - 1, 0, line_to, len(self.text(line_to)))
+                self.removeSelectedText()
+                
+                cursor_pos = self.positionFromLineIndex(line_from - 1, 0)
+                self.insertAt(line_above + "\n", line_to - 1, 0)
+                self.insertAt("".join(selected_lines), line_from - 1, 0)
+                
+                # Restore selection one line up
+                self.setSelection(line_from - 1, index_from, line_to - 1, index_to)
+                
+                self.endUndoAction()
+        else:
+            line, index = self.getCursorPosition()
+            if line > 0:  # Can't move up if at first line
+                self.beginUndoAction()
+                
+                # Get current line and the line above
+                current_line = self.text(line)
+                line_above = self.text(line - 1)
+                
+                # Swap the lines
+                self.setSelection(line - 1, 0, line, len(current_line))
+                self.removeSelectedText()
+                self.insertAt(current_line + line_above, line - 1, 0)
+                
+                # Move cursor up
+                self.setCursorPosition(line - 1, index)
+                
+                self.endUndoAction()
+
+    def move_line_down(self):
+        if self.hasSelectedText():
+            # Get the selection range
+            line_from, index_from, line_to, index_to = self.getSelection()
+            if line_from > line_to:
+                line_from, line_to = line_to, line_from
+                
+            if line_to < self.lines() - 1:  # Can't move down if at last line
+                self.beginUndoAction()
+                
+                # Get the line below the selection
+                line_below = self.text(line_to + 1)
+                
+                # Store all selected lines
+                selected_lines = []
+                for line in range(line_from, line_to + 1):
+                    selected_lines.append(self.text(line))
+                
+                # Remove the selected lines and insert them one line below
+                self.setSelection(line_from, 0, line_to + 1, len(line_below))
+                self.removeSelectedText()
+                
+                self.insertAt("".join(selected_lines), line_from, 0)
+                self.insertAt(line_below + "\n", line_from, 0)
+                
+                # Restore selection one line down
+                self.setSelection(line_from + 1, index_from, line_to + 1, index_to)
+                
+                self.endUndoAction()
+        else:
+            line, index = self.getCursorPosition()
+            if line < self.lines() - 1:  # Can't move down if at last line
+                self.beginUndoAction()
+                
+                # Get current line and the line below
+                current_line = self.text(line)
+                line_below = self.text(line + 1)
+                
+                # Swap the lines
+                self.setSelection(line, 0, line + 1, len(line_below))
+                self.removeSelectedText()
+                self.insertAt(line_below + current_line, line, 0)
+                
+                # Move cursor down
+                self.setCursorPosition(line + 1, index)
+                
+                self.endUndoAction()
+
     def custom_key_press_event(self, event):
         if event.modifiers() == Qt.KeyboardModifier.ControlModifier:
             if event.key() == Qt.Key.Key_Slash:
@@ -180,10 +281,39 @@ class CodeEditor(QsciScintilla):
                 self.insert_line_below()
                 return
             elif event.key() == Qt.Key.Key_E:
-                # Let the main window handle Ctrl+Tab
                 event.ignore()
                 return
-
+        elif event.modifiers() == Qt.KeyboardModifier.AltModifier:
+            if event.key() == Qt.Key.Key_Up:
+                self.move_line_up()
+                return
+            elif event.key() == Qt.Key.Key_Down:
+                self.move_line_down()
+                return
+                
+        if event.key() == Qt.Key.Key_Backspace:
+            line, index = self.getCursorPosition()
+            text = self.text(line)
+            if index > 0 and index < len(text):
+                pairs = {
+                    "(": ")",
+                    "[": "]",
+                    "{": "}",
+                    '"': '"',
+                    "'": "'"
+                }
+                # Check if character before cursor is an opening character
+                char_before = text[index - 1]
+                if char_before in pairs:
+                    # Check if character at cursor is the matching closing character
+                    if index < len(text) and text[index] == pairs[char_before]:
+                        # Delete both characters
+                        self.beginUndoAction()
+                        self.setSelection(line, index - 1, line, index + 1)
+                        self.removeSelectedText()
+                        self.endUndoAction()
+                        return
+                        
         if event.text() in {"(", "[", "{", '"', "'"}:
             pairs = {
                 "(": ")",
@@ -230,3 +360,34 @@ class CodeEditor(QsciScintilla):
             
         else:
             QsciScintilla.keyPressEvent(self, event)
+
+    def refresh_settings(self):
+        """Refresh all editor settings from global properties"""
+        # Update font
+        self.setFont(EDITOR_FONT)
+        
+        # Update indentation
+        self.setTabWidth(EDITOR_TAB_WIDTH)
+        self.setIndentationsUseTabs(EDITOR_USE_TABS)
+        
+        # Update colors
+        self.setColor(EDITOR_TEXT_COLOR)
+        self.setPaper(EDITOR_BACKGROUND_COLOR)
+        self.setSelectionBackgroundColor(EDITOR_SELECTION_BG_COLOR)
+        self.setSelectionForegroundColor(EDITOR_SELECTION_FG_COLOR)
+        self.setCaretForegroundColor(EDITOR_CARET_COLOR)
+        self.setCaretLineBackgroundColor(EDITOR_CARET_LINE_COLOR)
+        self.setMarginsBackgroundColor(EDITOR_MARGIN_BACKGROUND_COLOR)
+        self.setMatchedBraceBackgroundColor(EDITOR_BRACE_MATCHED_BG_COLOR)
+        self.setMatchedBraceForegroundColor(EDITOR_BRACE_MATCHED_FG_COLOR)
+        self.setUnmatchedBraceBackgroundColor(EDITOR_BRACE_UNMATCHED_BG_COLOR)
+        self.setUnmatchedBraceForegroundColor(EDITOR_BRACE_UNMATCHED_FG_COLOR)
+        
+        # Update lexer colors
+        if self.lexer:
+            self.lexer.init_colors()
+            self.lexer.setDefaultPaper(EDITOR_BACKGROUND_COLOR)
+            self.lexer.setDefaultColor(EDITOR_TEXT_COLOR)
+            self.lexer.setDefaultFont(EDITOR_FONT)
+            for i in range(len(self.lexer.styles)):
+                self.lexer.setFont(EDITOR_FONT, i)

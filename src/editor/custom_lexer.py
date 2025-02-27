@@ -27,7 +27,7 @@ class LexerCPP(QsciLexerCustom):
         "protected", "public", "return", "sizeof", "static",
         "struct", "switch", "template", "this", "throw", "try",
         "typedef", "typename", "union", "using", "virtual",
-        "volatile", "while"
+        "volatile", "while", "constexpr"
     ]
     
     type_list = [
@@ -51,36 +51,45 @@ class LexerCPP(QsciLexerCustom):
         ".", ",","->", "!", "~", "+", "&",
     ]
     
+    # Default colors in case properties are not available
+    default_colors = {
+        "Default": "#FFFFFF",
+        "Comment": "#37743f",
+        "DoubleSlashComment": "#37743f",
+        "Keyword": "#50B0FF",
+        "String": "#FFFF7F",
+        "Number": "#EDFFAF",
+        "Preprocessor": "#C586C0",
+        "Operator": "#FFFF7F",
+        "Identifier": "#FFFFFF",
+        "Type": "#50B0FF",
+        "Symbol": "#CC0099",
+        "Parantheses": "#50B0FF"
+    }
+    
     def __init__(self, parent):
         super().__init__(parent)
-
-        self.setDefaultColor(QColor("#FFFFFF"))
-        self.setDefaultPaper(QColor("#111111"))
-        self.setDefaultFont(QFont("Monospace", 16))
+        self.setDefaultColor(EDITOR_TEXT_COLOR)
+        self.setDefaultPaper(EDITOR_BACKGROUND_COLOR)
+        self.setDefaultFont(EDITOR_FONT)
         
         self.init_colors()
         
         for i in range(len(self.styles)):
-            if i == self.styles["Keyword"] or i == self.styles["Type"]:
-                self.setFont(QFont("Monospace", 16), i)
-            else:
-                self.setFont(QFont("Monospace", 16), i)
+            self.setFont(EDITOR_FONT, i)
 
     def init_colors(self):
-        self.setColor(SYNTAX_DEFAULT, self.styles["Default"])
-        self.setColor(SYNTAX_COMMENT, self.styles["Comment"])
-        self.setColor(SYNTAX_DOUBLE_SLASH_COMMENT, self.styles["DoubleSlashComment"])
-        self.setColor(SYNTAX_KEYWORD, self.styles["Keyword"])
-        self.setColor(SYNTAX_STRING, self.styles["String"])
-        self.setColor(SYNTAX_NUMBER, self.styles["Number"])
-        self.setColor(SYNTAX_PREPROCESSOR, self.styles["Preprocessor"])
-        self.setColor(SYNTAX_OPERATOR, self.styles["Operator"])
-        self.setColor(SYNTAX_IDENTIFIER, self.styles["Identifier"])
-        self.setColor(SYNTAX_TYPE, self.styles["Type"])
-        self.setColor(SYNTAX_SYMBOL, self.styles["Symbol"])
-        self.setColor(SYNTAX_PARANTHESES, self.styles["Parantheses"])
-        for i in range(len(self.styles)):
-            self.setPaper(SYNTAX_BACKGROUND, i)
+        # Helper function to get color safely
+        def get_color(style_name):
+            color_key = f"SYNTAX_{style_name.upper()}"
+            if color_key in globals():
+                return globals()[color_key]
+            return QColor(self.default_colors[style_name])
+
+        # Set colors for each style with fallback to defaults
+        for style_name, style_id in self.styles.items():
+            self.setColor(get_color(style_name), style_id)
+            self.setPaper(EDITOR_BACKGROUND_COLOR, style_id)
 
     def language(self):
         return "C++"

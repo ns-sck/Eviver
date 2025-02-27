@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QMenuBar, QMenu, QFileDialog, QMessageBox
+from PyQt6.QtWidgets import QMenuBar, QMenu, QFileDialog, QMessageBox, QDialog
 from PyQt6.QtCore import Qt
 from editor.code_editor import CodeEditor
 from utils.properties import *
@@ -16,6 +16,8 @@ class MenuBar(QMenuBar):
         file_menu.addAction("Save", self.save_file).setShortcut(SHORTCUT_SAVE_FILE)
         file_menu.addAction("Save As", self.save_file_as).setShortcut(SHORTCUT_SAVE_AS)
         file_menu.addAction("Close Tab", self.close_current_tab).setShortcut(SHORTCUT_CLOSE_TAB)
+        file_menu.addSeparator()
+        file_menu.addAction("Settings", self.show_settings).setShortcut("Ctrl+,")
         file_menu.addSeparator()
         file_menu.addAction("Exit", self.parent().close).setShortcut(SHORTCUT_EXIT)
 
@@ -136,4 +138,10 @@ class MenuBar(QMenuBar):
             current_editor.paste()
 
     def toggle_file_browser(self):
-        self.parent().file_browser_manager.toggle_view() 
+        self.parent().file_browser_manager.toggle_view()
+
+    def show_settings(self):
+        from .settings_dialog import SettingsDialog
+        dialog = SettingsDialog(self)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            QMessageBox.information(self, "Settings", "Settings saved. Please restart the application for changes to take effect.") 

@@ -12,7 +12,7 @@ class IOManager:
     def setup_io_widget(self):
         self.io_widget = QWidget()
         self.io_layout = QVBoxLayout(self.io_widget)
-        self.io_layout.setContentsMargins(0, 0, 0, 0)
+        self.io_layout.setContentsMargins(0, 30, 0, 0)
         self.io_layout.setSpacing(0)
         
         self.io_splitter = QSplitter(Qt.Orientation.Vertical)
