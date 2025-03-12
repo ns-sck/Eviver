@@ -9,7 +9,10 @@ try:
     from utils.properties import (
         SETTINGS_FILE, EDITOR_TEXT_COLOR, EDITOR_BACKGROUND_COLOR, 
         EDITOR_FONT, EDITOR_FONT_FAMILY, EDITOR_FONT_SIZE,
-        SYNTAX_KEYWORD, load_settings_from_json
+        SYNTAX_KEYWORD, load_settings_from_json,
+        COMPILE_RELEASE_CMD, COMPILE_DEBUG_CMD,
+        SHORTCUT_NEW_FILE, SHORTCUT_SAVE_FILE,
+        DEFAULT_WORKSPACE_DIR
     )
     
     print("Successfully imported properties module")
@@ -20,6 +23,12 @@ try:
     print(f"EDITOR_BACKGROUND_COLOR: {EDITOR_BACKGROUND_COLOR.name()}")
     print(f"EDITOR_FONT: {EDITOR_FONT.family()}, {EDITOR_FONT.pointSize()}")
     print(f"SYNTAX_KEYWORD: {SYNTAX_KEYWORD.name()}")
+    
+    print(f"COMPILE_RELEASE_CMD: {COMPILE_RELEASE_CMD}")
+    print(f"COMPILE_DEBUG_CMD: {COMPILE_DEBUG_CMD}")
+    print(f"SHORTCUT_NEW_FILE: {SHORTCUT_NEW_FILE}")
+    print(f"SHORTCUT_SAVE_FILE: {SHORTCUT_SAVE_FILE}")
+    print(f"DEFAULT_WORKSPACE_DIR: {DEFAULT_WORKSPACE_DIR}")
     
     if os.path.exists(SETTINGS_FILE):
         print(f"\nSettings file exists at: {SETTINGS_FILE}")

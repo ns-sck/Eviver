@@ -6,13 +6,15 @@ import json
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SETTINGS_FILE = os.path.join(PROJECT_DIR, "settings.json")
 
-WINDOW_TITLE = "CP Code Editor"
+# Default values for settings that can be overridden by settings.json
+WINDOW_TITLE = "Eviver Code Editor"
 WINDOW_INITIAL_GEOMETRY = (100, 100, 1200, 800)
 
 EDITOR_FONT_FAMILY = "Consolas"
 EDITOR_FONT_SIZE = 10
 EDITOR_TAB_WIDTH = 2
 EDITOR_USE_TABS = False
+EDITOR_INDENTATION = "\t" if EDITOR_USE_TABS else " " * EDITOR_TAB_WIDTH
 
 EDITOR_TEXT_COLOR = QColor("#FFFFFF")
 EDITOR_BACKGROUND_COLOR = QColor("#2B2B2B")
@@ -48,19 +50,9 @@ EDITOR_CARET_WIDTH = 2
 TERMINAL_WIDTH = 80
 TERMINAL_HEIGHT = 32
 
-EDITOR_FONT = QFont(EDITOR_FONT_FAMILY, EDITOR_FONT_SIZE)
-
-EVIVER_DIR = os.path.expanduser("~/eviver")
-IO_DIR = os.path.join(EVIVER_DIR, "io")
-BIN_DIR = os.path.join(EVIVER_DIR, "bin")
-INPUT_FILE = "input.txt"
-OUTPUT_FILE = "output.txt"
-INPUT_PATH = os.path.join(IO_DIR, INPUT_FILE)
-OUTPUT_PATH = os.path.join(IO_DIR, OUTPUT_FILE)
-SNIPPETS_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "resources", "snippets.json")
-
-COMPILE_RELEASE_CMD = 'g++ -std=c++17 -Wshadow -Wall -o "{executable}" "{source}" -O2 -Wno-unused-result'
-COMPILE_DEBUG_CMD = 'g++ -std=c++17 -Wshadow -Wall -o "{executable}" "{source}" -g -D_GLIBCXX_DEBUG'
+# Default values for settings that can now be overridden by settings.json
+COMPILE_RELEASE_CMD = 'g++ -DLOCAL -std=c++17 -Wshadow -Wall -o "{executable}" "{source}" -O2 -Wno-unused-result'
+COMPILE_DEBUG_CMD = 'g++ -DLOCAL -std=c++17 -Wshadow -Wall -o "{executable}" "{source}" -g -D_GLIBCXX_DEBUG'
 
 SHORTCUT_NEW_FILE = "Ctrl+N"
 SHORTCUT_OPEN_FILE = "Ctrl+O"
@@ -76,14 +68,24 @@ SHORTCUT_COMPILE_RUN = "Ctrl+Alt+N"
 SHORTCUT_COMPILE_DEBUG = "F9"
 SHORTCUT_CYCLE_EDITORS = "F3"
 
-DEFAULT_WORKSPACE_DIR = os.path.expanduser("~/Desktop/Competitive-Programming")
+DEFAULT_WORKSPACE_DIR = os.path.expanduser("~/Desktop/algo")
+
+# These paths are not configurable via settings.json
+EVIVER_DIR = os.path.expanduser("~/eviver")
+IO_DIR = os.path.join(EVIVER_DIR, "io")
+BIN_DIR = os.path.join(EVIVER_DIR, "bin")
+INPUT_FILE = "input.txt"
+OUTPUT_FILE = "output.txt"
+INPUT_PATH = os.path.join(IO_DIR, INPUT_FILE)
+OUTPUT_PATH = os.path.join(IO_DIR, OUTPUT_FILE)
+SNIPPETS_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "resources", "snippets.json")
 
 for directory in [EVIVER_DIR, IO_DIR, BIN_DIR]:
     if not os.path.exists(directory):
         os.makedirs(directory, exist_ok=True)
 
 def load_settings_from_json():
-    global EDITOR_FONT
+    global EDITOR_FONT, EDITOR_INDENTATION
     
     try:
         if os.path.exists(SETTINGS_FILE):
@@ -94,13 +96,20 @@ def load_settings_from_json():
                     if key in globals():
                         if key.endswith('_COLOR') or key.startswith('SYNTAX_'):
                             globals()[key] = QColor(value)
+                        elif key == "DEFAULT_WORKSPACE_DIR" and isinstance(value, str) and '~' in value:
+                            globals()[key] = os.path.expanduser(value)
                         else:
                             globals()[key] = value
                 
                 EDITOR_FONT = QFont(EDITOR_FONT_FAMILY, EDITOR_FONT_SIZE)
+                
+                EDITOR_INDENTATION = "\t" if EDITOR_USE_TABS else " " * EDITOR_TAB_WIDTH
+                
                 return True
     except Exception as e:
         print(f"Error loading settings: {e}")
     return False
+
+EDITOR_FONT = QFont(EDITOR_FONT_FAMILY, EDITOR_FONT_SIZE)
 
 load_settings_from_json()

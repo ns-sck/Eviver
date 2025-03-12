@@ -38,7 +38,7 @@ class LexerCPP(QsciLexerCustom):
     ]
 
     number_list = [
-        # "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
+        "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
     ]
 
     parantheses_list = [
@@ -47,7 +47,7 @@ class LexerCPP(QsciLexerCustom):
 
     symbol_list = [
         ">", "<", "=", "+", "-", "*", "/", "%",
-        "!", "~", "&", "|", "^", "?", ":", ";",
+        "!", "~", "&", "|", "^", "?", ":",
         ".", ",","->", "!", "~", "+", "&",
     ]
     
@@ -88,8 +88,13 @@ class LexerCPP(QsciLexerCustom):
 
         # Set colors for each style with fallback to defaults
         for style_name, style_id in self.styles.items():
-            self.setColor(get_color(style_name), style_id)
+            color = get_color(style_name)
+            self.setColor(color, style_id)
             self.setPaper(EDITOR_BACKGROUND_COLOR, style_id)
+            
+        # Explicitly set comment colors to ensure they're applied
+        self.setColor(SYNTAX_COMMENT, self.styles["Comment"])
+        self.setColor(SYNTAX_DOUBLE_SLASH_COMMENT, self.styles["DoubleSlashComment"])
 
     def language(self):
         return "C++"
@@ -111,7 +116,7 @@ class LexerCPP(QsciLexerCustom):
         
         for line in lines:
             stripped_line = line.lstrip()
-            if stripped_line.startswith('#include') or stripped_line.startswith('#define'):
+            if stripped_line.startswith('#'):
                 leading_spaces = len(line) - len(stripped_line)
                 if leading_spaces > 0:
                     self.setStyling(leading_spaces, self.styles["Default"])

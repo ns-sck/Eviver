@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import QDialog, QVBoxLayout
 from ui.snippet_manager import SnippetManager
+from utils.properties import EDITOR_INDENTATION, EDITOR_USE_TABS, EDITOR_TAB_WIDTH
 
 class SnippetHandler:
     def __init__(self, editor):
@@ -29,7 +30,8 @@ class SnippetHandler:
             line, index = self.editor.getCursorPosition()
             current_line = self.editor.text(line)
             indent = len(current_line.expandtabs(self.editor.tabWidth())) - len(current_line.expandtabs(self.editor.tabWidth()).lstrip())
-            indent_str = "\t" * (indent // self.editor.tabWidth())
+            indent_level = indent // self.editor.tabWidth()
+            indent_str = EDITOR_INDENTATION * indent_level
 
             lines = snippet_body.split("\n")
             indented_lines = []

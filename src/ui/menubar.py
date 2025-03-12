@@ -75,6 +75,7 @@ class MenuBar(QMenuBar):
             )
             if file_name:
                 self._save_to_file(file_name)
+                current_editor.set_file_path(file_name)
                 current_index = self.parent().tab_manager.get_widget().currentIndex()
                 self.parent().tab_manager.get_widget().setTabText(current_index, os.path.basename(file_name))
                 self.parent().tab_manager.get_widget().setTabToolTip(current_index, file_name)

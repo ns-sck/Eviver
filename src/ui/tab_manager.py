@@ -25,6 +25,8 @@ class TabManager:
                 color: #CCCCCC;
                 border: none;
                 height: 24px;
+                padding-left: 10px;
+                padding-right: 25px; /* Make room for close button */
                 margin: 2px;
             }
             QTabBar::tab:selected {
@@ -35,13 +37,19 @@ class TabManager:
                 background-color: #353535;
             }
             QTabBar::close-button {
-                image: url(resources/close.png);
-                subcontrol-position: right;
+                /* Use an explicit X character for better compatibility */
+                background-color: transparent;
+                color: #AAAAAA;
+                border-radius: 2px;
                 margin: 2px;
+                subcontrol-origin: padding;
+                subcontrol-position: right;
+                width: 16px;
+                height: 16px;
             }
             QTabBar::close-button:hover {
                 background-color: #AA0000;
-                border-radius: 2px;
+                color: white;
             }
             QTabBar::close-button:pressed {
                 background-color: #E81123;
@@ -58,6 +66,7 @@ class TabManager:
             with open(file_path, 'r') as file:
                 new_editor = CodeEditor()
                 new_editor.setText(file.read())
+                new_editor.set_file_path(file_path)  # Set the file path to apply appropriate lexer
                 tab_name = os.path.basename(file_path)
                 self.tab_widget.addTab(new_editor, tab_name)
                 self.tab_widget.setTabToolTip(self.tab_widget.count() - 1, file_path)

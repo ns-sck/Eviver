@@ -20,10 +20,12 @@ class IOManager:
         
         self.input_editor = CodeEditor()
         self.input_editor.setWindowTitle(INPUT_FILE)
+        self.input_editor.set_file_path(INPUT_PATH)
         self.io_splitter.addWidget(self.input_editor)
 
         self.output_editor = CodeEditor()
         self.output_editor.setWindowTitle(OUTPUT_FILE)
+        self.output_editor.set_file_path(OUTPUT_PATH)
         self.io_splitter.addWidget(self.output_editor)
 
         self.io_widget.hide()
@@ -40,10 +42,12 @@ class IOManager:
             if os.path.exists(INPUT_PATH):
                 with open(INPUT_PATH, 'r') as f:
                     self.input_editor.setText(f.read())
+                self.input_editor.set_file_path(INPUT_PATH)
             
             if os.path.exists(OUTPUT_PATH):
                 with open(OUTPUT_PATH, 'r') as f:
                     self.output_editor.setText(f.read())
+                self.output_editor.set_file_path(OUTPUT_PATH)
         except Exception as e:
             QMessageBox.critical(self.parent, "Error", f"Could not load I/O files: {str(e)}")
 

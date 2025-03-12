@@ -44,7 +44,19 @@ class CompilerManager:
 
         if compile_process.exitCode() != 0:
             error = compile_process.readAllStandardError().data().decode()
-            QMessageBox.critical(self.parent, "Compilation Error", error)
+            
+            # Write compilation error to output.txt instead of showing popup
+            self.parent.io_manager.output_editor.setText(error)
+            try:
+                with open(OUTPUT_PATH, 'w') as f:
+                    f.write(error)
+            except Exception as e:
+                QMessageBox.critical(self.parent, "Error", f"Could not save output: {str(e)}")
+            
+            # Make sure the IO widget is visible to show the error
+            if not self.parent.io_manager.io_widget.isVisible():
+                self.parent.io_manager.toggle_view()
+                
             return
 
         if self.parent.io_manager.io_widget.isVisible():

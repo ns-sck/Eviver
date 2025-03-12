@@ -123,5 +123,7 @@ class FileBrowser(QWidget):
                 self._on_item_double_clicked(current_item)
         elif event.key() == Qt.Key.Key_Backspace:
             self.go_to_parent_directory()
+        elif event.key() == Qt.Key.Key_Escape:
+            self.go_to_parent_directory()
         else:
             super().keyPressEvent(event)

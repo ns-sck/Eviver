@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QDockWidget, 
-                             QStackedWidget, QMessageBox, QTabWidget, QSplitter)
-from PyQt6.QtCore import Qt, QEvent, QProcess, QTimer
+                             QStackedWidget, QMessageBox, QTabWidget, QSplitter, QStatusBar, QLabel)
+from PyQt6.QtCore import Qt, QEvent, QProcess, QTimer, QTime
 from PyQt6.QtGui import QFont
 from .menubar import MenuBar
 from .io_manager import IOManager
@@ -17,6 +17,7 @@ class MainWindow(QMainWindow):
         self.init_filesystem()
         self.init_managers()
         self.init_ui()
+        self.init_status_bar()
 
     def init_filesystem(self):
         os.makedirs(IO_DIR, exist_ok=True)
@@ -38,8 +39,30 @@ class MainWindow(QMainWindow):
         self.file_browser_manager.connect_file_selected(self.tab_manager.open_file)
 
     def init_ui(self):
+        # Explicitly set the window title from properties
         self.setWindowTitle(WINDOW_TITLE)
         self.setGeometry(*WINDOW_INITIAL_GEOMETRY)
+        
+        # Ensure consistent window decorations across environments
+        self.setWindowFlags(Qt.WindowType.Window)
+        
+        # Set a consistent style for the entire application
+        self.setStyleSheet(f"""
+            QMainWindow {{
+                background-color: #1E1E1E;
+                color: #FFFFFF;
+            }}
+            QMainWindow::title {{
+                background-color: #2D2D2D;
+                color: #FFFFFF;
+                font-weight: bold;
+                padding: 5px;
+                text-align: center;
+            }}
+            QTabBar::tab {{
+                height: 24px;
+            }}
+        """)
 
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
@@ -74,6 +97,46 @@ class MainWindow(QMainWindow):
         self.installEventFilter(self)
         
         self.stacked_widget.setCurrentWidget(self.file_browser_manager.get_widget())
+
+        # Call update title after a short delay to ensure it's set correctly
+        QTimer.singleShot(100, self.update_window_title)
+
+    def init_status_bar(self):
+        """Initialize the status bar with clock"""
+        self.status_bar = self.statusBar()
+        self.status_bar.setStyleSheet("""
+            QStatusBar {
+                background-color: #1e1e1e;
+                color: #d8dee9;
+                border-top: 1px solid #333333;
+            }
+        """)
+        
+        # Create clock label
+        self.clock_label = QLabel()
+        self.clock_label.setStyleSheet("""
+            QLabel {
+                color: #d8dee9;
+                padding: 2px 8px;
+                font-family: Consolas;
+            }
+        """)
+        self.status_bar.addPermanentWidget(self.clock_label)
+        
+        # Update clock every second
+        self.clock_timer = QTimer(self)
+        self.clock_timer.timeout.connect(self.update_clock)
+        self.clock_timer.start(1000)  # Update every 1000ms (1 second)
+        self.update_clock()  # Initial update
+
+    def update_window_title(self):
+        """Update the window title to ensure it's displayed correctly"""
+        self.setWindowTitle(WINDOW_TITLE)
+
+    def update_clock(self):
+        """Update the clock display"""
+        current_time = QTime.currentTime()
+        self.clock_label.setText(current_time.toString("HH:mm:ss"))
 
     def eventFilter(self, obj, event):
         if event.type() == QEvent.Type.KeyPress:
