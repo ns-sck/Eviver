@@ -104,7 +104,7 @@ class SettingsDialog(QDialog):
         self.parent = parent
         self.setWindowTitle("Settings")
         self.resize(800, 600)
-        self.settings = self.load_settings() or DEFAULT_SETTINGS.copy()
+        self.settings = self.load_settings()
         self.init_ui()
         self.load_current_settings()
         
