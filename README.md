@@ -3,7 +3,9 @@
 A specialized code editor designed for competitive programming, built with Python. This editor aims to enhance the coding experience with features tailored for competitive programmers.
 
 ![Project Screenshot](app2.png)
+
 ![Project Screenshot](app3.png)
+
 ![Project Screenshot](app4.png)
 ## Features
 
