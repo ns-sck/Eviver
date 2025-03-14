@@ -4,6 +4,8 @@ A specialized code editor designed for competitive programming, built with Pytho
 
 ## Features
 
+![Project Screenshot](app.png)
+
 - 📝 Code Editor
   - Syntax highlighting for multiple programming languages
   - Line numbering
@@ -67,22 +69,3 @@ A specialized code editor designed for competitive programming, built with Pytho
 3. Write your code in the editor
 4. Save using File -> Save or Ctrl+S
 5. Use the integrated terminal for compilation and execution
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- Thanks to all contributors who participate in this project
-- Inspired by various code editors and competitive programming platforms
