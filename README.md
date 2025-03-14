@@ -4,6 +4,7 @@ A specialized code editor designed for competitive programming, built with Pytho
 
 ![Project Screenshot](app2.png)
 ![Project Screenshot](app3.png)
+![Project Screenshot](app4.png)
 ## Features
 
 - 📝 Code Editor
